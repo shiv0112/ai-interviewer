@@ -2,17 +2,19 @@
 
 The user interation is like this
 
-'''
+---
+**NOTE**
 USER INPUT
 ├── Option 1: Role name ➝ role_based_chain ➝ LLM ➝ question
 ├── Option 2: Resume + JD ➝ hybrid_chain (context + RAG) ➝ LLM ➝ tailored question
 ├── Option 3: Resume only ➝ resume_based_chain ➝ LLM
 └── Option 4: JD only ➝ jd_based_chain ➝ LLM
-'''
+---
 
 The folder structure is like this
 
-'''
+---
+**NOTE**
 ai_interviewer/
 │
 ├── main.py                          # FastAPI app entry point
@@ -80,4 +82,4 @@ ai_interviewer/
     ├── uploads/                     # User-uploaded resumes/JDs
     ├── logs/                        # Logs for the app (can be rotated, archived)
     └── vectorstore/                 # Data for the knowledge base or RAG store
-'''
+---
