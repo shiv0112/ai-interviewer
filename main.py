@@ -1,10 +1,16 @@
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import (
     status,
+    role_based_router,
     feedback_router, 
     resume_jd_router, 
-    role_based_router
 )
 
 app = FastAPI(
@@ -23,9 +29,9 @@ app.add_middleware(
 
 # Include the routers correctly
 app.include_router(status.router)
+app.include_router(role_based_router.router)
 # app.include_router(feedback_router.router)
 # app.include_router(resume_jd_router.router)
-# app.include_router(role_based_router.router)
 
 if __name__ == "__main__":
     import uvicorn
