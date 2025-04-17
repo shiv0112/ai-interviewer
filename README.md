@@ -2,7 +2,6 @@
 
 The user interation is like this
 
----
 **NOTE**
 USER INPUT
 ├── Option 1: Role name ➝ role_based_chain ➝ LLM ➝ question
@@ -13,7 +12,6 @@ USER INPUT
 
 The folder structure is like this
 
----
 **NOTE**
 ai_interviewer/
 │
