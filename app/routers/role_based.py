@@ -15,7 +15,7 @@ def get_all_sessions():
     sessions = list_sessions()
     return {"active_sessions": sessions}
 
-router.post("/reset")
+@router.post("/reset")
 def reset_chat_session(session_id: str):
     """
     Reset the conversation session by session_id.
