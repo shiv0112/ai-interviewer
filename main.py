@@ -9,8 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routers import (
     status,
     role_based,
-    resume,
     jd,
+    resume,
     hybrid,
 )
 
@@ -18,7 +18,7 @@ app = FastAPI(
     title="AI Interviewer",
     description=(
         "A conversational mock-interview tool that adapts to your input—"
-        "whether you supply a role title, your resume, a job description, or both. "
+        "whether you supply a role title, a job description, your resume, or both. "
         "Powered by FastAPI, LangChain, and LLMs to generate targeted questions "
         "and follow-ups based on your background and the hiring criteria."
     ),
@@ -36,8 +36,8 @@ app.add_middleware(
 # Include the routers correctly
 app.include_router(status.router)
 app.include_router(role_based.router)
+app.include_router(jd.router)
 # app.include_router(resume.router)
-# app.include_router(jd.router)
 # app.include_router(hybrid.router)
 
 

@@ -6,30 +6,31 @@ The application flow is like this
 
 ```bash
 USER INPUT
-├── Option 1: Role Based  
+├── Option 1: Role Based  ✅
 │     ➝ ask “Which role?”  
 │     ➝ role_based_chain  
 │     ➝ LLM  
 │     ➝ return next interview question  
 │
-├── Option 2: Resume + JD  
-│     ➝ upload resume & JD text  
-│     ➝ hybrid_chain (RAG + prompt)  
+├── Option 2: JD Only  ✅
+│     ➝ upload JD text  
+│     ➝ jd_based_chain
 │     ➝ LLM  
 │     ➝ tailored question  
 │
-├── Option 3: Resume Only  
+├── Option 3: Resume Only   
 │     ➝ upload resume text  
 │     ➝ resume_based_chain  
 │     ➝ LLM  
 │     ➝ tailored question  
 │
-└── Option 4: JD Only  
+└── Option 4: Resume + JD  
       ➝ upload JD text  
-      ➝ jd_based_chain  
-      ➝ LLM  
-      ➝ tailored question  
-
+      ➝ upload resume & JD text  
+      ➝ hybrid_chain (RAG + prompt)   
+      ➝ LLM question  
+      ➝ tailored question
+      
 ```
 
 ## Folder Structure

@@ -1,13 +1,12 @@
 from uuid import uuid4
 from datetime import datetime, timedelta
 from langchain.memory import ConversationBufferMemory
-
-SESSION_TIMEOUT_MINUTES = 20  # Auto-expire sessions after 20 minutes of inactivity
+from app.config.settings import SESSION_TIMEOUT_MINUTES
 
 class ChatSession:
     def __init__(self):
         self.memory = ConversationBufferMemory(memory_key="chat_history")
-        self.role_name: str | None = None
+        self.job_desc: str | None = None
         self.created_at = datetime.utcnow()
         self.last_accessed = datetime.utcnow()
 
@@ -56,7 +55,7 @@ def list_sessions() -> list[dict]:
 
         sessions_summary.append({
             "session_id": session_id,
-            "role_name": session.role_name,
+            "job_desc": session.job_desc,
             "message_count": message_count,
             "created_at": session.created_at.isoformat(),
             "last_accessed": session.last_accessed.isoformat(),

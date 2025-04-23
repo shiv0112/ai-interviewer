@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from app.config.settings import INIT_PROMPT
 from app.schemas.role_based_schema import ChatRequest, ChatResponse
-from app.memory.conversation import get_session, list_sessions, reset_session
+from app.memory.role_conversation import get_session, list_sessions, reset_session
 from app.chains.role_based_chain import get_role_conversation_chain, get_evaluation_chain
 from app.utils.logger import logger
 
@@ -104,5 +103,3 @@ async def evaluate_candidate(session_id: str):
     except Exception as e:
         logger.error(f"[EvaluationError][sid={sid}]: {e}")
         raise HTTPException(500, "Failed to evaluate session.")
-
-    
