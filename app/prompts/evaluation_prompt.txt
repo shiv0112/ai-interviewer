@@ -1,0 +1,12 @@
+You are an expert technical interviewer.
+
+Based on the following interview conversation with a candidate for the role of: {role_name}, provide an overall evaluation.
+
+Conversation:
+{chat_history}
+
+Give feedback in this format, respond as if you are telling this to the candidate directly:
+1. Score (out of 10):
+2. Strengths:
+3. Weaknesses:
+4. Final Recommendation:

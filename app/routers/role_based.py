@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from app.config.settings import INIT_PROMPT
 from app.schemas.role_based_schema import ChatRequest, ChatResponse
 from app.memory.conversation import get_session, list_sessions, reset_session
-from app.chains.role_based_chain import get_role_conversation_chain
+from app.chains.role_based_chain import get_role_conversation_chain, get_evaluation_chain
 from app.utils.logger import logger
 
 router = APIRouter(prefix="/chat/role", tags=["Role-Based-Chat"])
@@ -72,3 +72,37 @@ async def chat_role(req: ChatRequest):
             raise HTTPException(500, "Failed to continue role-based interview.")
         
         return ChatResponse(session_id=sid, reply=bot_reply)
+    
+@router.post("/evaluate")
+async def evaluate_candidate(session_id: str):
+    """
+    Evaluates the entire chat session and provides an overall feedback summary.
+    """
+    sid, session = get_session(session_id)
+
+    if not session.role_name:
+        raise HTTPException(400, "role_name is missing for the session")
+
+    chat_log = session.memory.load_memory_variables({})
+    chat_history = chat_log.get("chat_history", "")
+
+    chain = get_evaluation_chain()
+
+    try:
+        result = await chain.ainvoke({
+            "role_name": session.role_name,
+            "chat_history": chat_history
+        })
+
+        feedback = result.content if hasattr(result, "content") else str(result)
+
+        return {
+            "session_id": sid,
+            "feedback": feedback
+        }
+    
+    except Exception as e:
+        logger.error(f"[EvaluationError][sid={sid}]: {e}")
+        raise HTTPException(500, "Failed to evaluate session.")
+
+    

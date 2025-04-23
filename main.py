@@ -9,7 +9,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routers import (
     status,
     role_based,
-    feedback,
     resume,
     jd,
     hybrid,
@@ -37,7 +36,6 @@ app.add_middleware(
 # Include the routers correctly
 app.include_router(status.router)
 app.include_router(role_based.router)
-# app.include_router(feedback.router)
 # app.include_router(resume.router)
 # app.include_router(jd.router)
 # app.include_router(hybrid.router)
