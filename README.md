@@ -60,7 +60,6 @@ ai_interviewer/
 │   │   ├── resume.py                  # /chat/resume (future expansion)
 │   │   ├── jd.py                      # /chat/jd (based on JD input)
 │   │   ├── hybrid.py                  # /chat/hybrid (resume + JD combo)
-│   │   ├── feedback.py                # /feedback (collect user feedback on questions)
 │   │   └── status.py                  # /health or /status (heartbeat or version check)
 │
 │   ├── schemas/              # 🧾 Pydantic models for validation
