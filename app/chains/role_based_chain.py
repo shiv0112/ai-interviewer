@@ -1,33 +1,34 @@
 import os
-from app.core.configs import GEMINI_MODEL, GEMINI_TEMP
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
+from langchain.chains import ConversationChain
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain.memory import ConversationBufferMemory
+from app.config.settings import GEMINI_MODEL, GEMINI_TEMP, PROMPT_PATH
 
-# Get the API key from the environment
 google_api_key = os.getenv("GEMINI_API_KEY")
-
 if not google_api_key:
     raise ValueError("GEMINI_API_KEY is missing from environment variables.")
 
-def get_role_based_chain():
-    # Load prompt template
-    prompt_path = os.path.join("app", "prompts", "role_prompt.txt")
-    with open(prompt_path, "r") as file:
-        template = file.read()
+def get_role_conversation_chain(memory: ConversationBufferMemory, role_name: str) -> ConversationChain:
 
-    # Create prompt template
+    template_str = PROMPT_PATH.read_text()  
+    dynamic_prompt = template_str.replace("{role_name}", role_name)
+
+
     prompt = PromptTemplate(
-        input_variables=["role_name"],
-        template=template
+        input_variables=["chat_history", "input"],
+        template=dynamic_prompt
     )
 
-    # Initialize ChatGoogleGenerativeAI with the API key
     llm = ChatGoogleGenerativeAI(
-        model=GEMINI_MODEL,  # Or another version if applicable
+        model=GEMINI_MODEL,
         temperature=GEMINI_TEMP,
-        google_api_key=google_api_key  # Pass the key here
+        google_api_key=google_api_key
     )
 
-    # Create LangChain chain
-    chain = prompt | llm
-    return chain
+    return ConversationChain(
+        llm=llm,
+        prompt=prompt,
+        memory=memory,
+        verbose=True
+    )

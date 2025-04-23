@@ -1,3 +1,0 @@
-# GEMINI_API
-GEMINI_TEMP = 0.7
-GEMINI_MODEL = "gemini-2.0-flash"
