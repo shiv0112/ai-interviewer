@@ -27,8 +27,8 @@ def reset_chat_session(session_id: str):
     else:
         raise HTTPException(status_code=404, detail="Session ID not found")
 
-@router.post("/", response_model=ChatResponse)
-async def chat_role(req: ChatRequest):
+@router.post("/interview", response_model=ChatResponse)
+async def interview_role(req: ChatRequest):
     """
     Stateful role-based conversation using ConversationBufferMemory.
     The first message should include `role_name` without `session_id`.
@@ -45,7 +45,7 @@ async def chat_role(req: ChatRequest):
         chain = get_role_conversation_chain(session.memory, session.role_name)
         try:
             bot_reply = await chain.apredict(
-                input="Hi, I’m ready to begin."
+                input="Hi, I'm ready to begin for my interview."
             )
         except Exception as e:
             logger.error(f"[RoleChatError][sid={sid}][first]: {e}")
