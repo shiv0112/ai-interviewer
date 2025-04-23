@@ -1,11 +1,31 @@
 from fastapi import APIRouter, HTTPException
 from app.config.settings import INIT_PROMPT
 from app.schemas.role_based_schema import ChatRequest, ChatResponse
-from app.memory.conversation import get_session
+from app.memory.conversation import get_session, list_sessions, reset_session
 from app.chains.role_based_chain import get_role_conversation_chain
 from app.utils.logger import logger
 
 router = APIRouter(prefix="/chat/role", tags=["Role-Based-Chat"])
+
+@router.get("/sessions")
+def get_all_sessions():
+    """
+    Returns all active session IDs with their role name and message count.
+    """
+    sessions = list_sessions()
+    return {"active_sessions": sessions}
+
+router.post("/reset")
+def reset_chat_session(session_id: str):
+    """
+    Reset the conversation session by session_id.
+    Clears memory and deletes session.
+    """
+    was_reset = reset_session(session_id)
+    if was_reset:
+        return {"status": "success", "message": f"Session {session_id} reset successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="Session ID not found")
 
 @router.post("/", response_model=ChatResponse)
 async def chat_role(req: ChatRequest):
