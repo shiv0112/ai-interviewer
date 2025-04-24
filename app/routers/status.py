@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from app.utils.logger import logger
 
-router = APIRouter()
+router = APIRouter(tags=["Live-Check"])
 
 @router.get("/", summary="Live Check", description="Returns the live status of the API.")
 async def status_check():

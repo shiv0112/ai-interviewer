@@ -8,14 +8,20 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import (
     status,
-    role_based_router,
-    feedback_router, 
-    resume_jd_router, 
+    role_based,
+    jd,
+    resume,
+    hybrid,
 )
 
 app = FastAPI(
     title="AI Interviewer",
-    description="AI Interviewer to prepare for interviews using the Resume and Job Description, or in general to prepare for any job interview",
+    description=(
+        "A conversational mock-interview tool that adapts to your input—"
+        "whether you supply a role title, a job description, your resume, or both. "
+        "Powered by FastAPI, LangChain, and LLMs to generate targeted questions "
+        "and follow-ups based on your background and the hiring criteria."
+    ),
     version="0.0.1"
 )
 
@@ -29,9 +35,11 @@ app.add_middleware(
 
 # Include the routers correctly
 app.include_router(status.router)
-app.include_router(role_based_router.router)
-# app.include_router(feedback_router.router)
-# app.include_router(resume_jd_router.router)
+app.include_router(role_based.router)
+app.include_router(jd.router)
+# app.include_router(resume.router)
+# app.include_router(hybrid.router)
+
 
 if __name__ == "__main__":
     import uvicorn

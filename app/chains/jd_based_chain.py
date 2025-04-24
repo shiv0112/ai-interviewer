@@ -3,7 +3,7 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import ConversationChain, LLMChain
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.memory import ConversationBufferMemory
-from app.config.settings import GEMINI_MODEL, GEMINI_TEMP, ROLE_PROMPT_PATH, ROLE_EVAL_PROMPT_PATH
+from app.config.settings import GEMINI_MODEL, GEMINI_TEMP, JD_PROMPT_PATH, JD_EVAL_PROMPT_PATH
 
 google_api_key = os.getenv("GEMINI_API_KEY")
 if not google_api_key:
@@ -11,7 +11,7 @@ if not google_api_key:
 
 def get_role_conversation_chain(memory: ConversationBufferMemory, job_desc: str) -> ConversationChain:
 
-    template_str = ROLE_PROMPT_PATH.read_text()  
+    template_str = JD_PROMPT_PATH.read_text()  
     dynamic_prompt = template_str.replace("{job_desc}", job_desc)
 
 
@@ -35,7 +35,7 @@ def get_role_conversation_chain(memory: ConversationBufferMemory, job_desc: str)
 
 def get_evaluation_chain() -> LLMChain:
 
-    template = ROLE_EVAL_PROMPT_PATH.read_text()
+    template = JD_EVAL_PROMPT_PATH.read_text()
 
     prompt = PromptTemplate(
         input_variables=["job_desc", "chat_history"],
