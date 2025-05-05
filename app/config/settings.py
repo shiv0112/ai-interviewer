@@ -1,5 +1,7 @@
 from pathlib import Path
 
+DEBUG = True
+
 # GEMINI_API
 GEMINI_TEMP = 0.7
 GEMINI_MODEL = "gemini-2.0-flash"
@@ -15,6 +17,7 @@ JD_EVAL_PROMPT_PATH = Path("app/prompts/jd_evaluation_prompt.txt")
 
 # RESUME CONFIGS
 COLLECTION_NAME = "resume_collection"
+EMBEDDING_MODEL = "models/embedding-001"
 CHUNK_SIZE = 600
 CHUNK_OVERLAP = 100
 VECTOR_DIM = 768

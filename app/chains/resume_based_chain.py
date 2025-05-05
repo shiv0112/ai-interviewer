@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_qdrant import QdrantVectorStore
-from langchain.chains import RetrievalQA
+from langchain.chains import LLMChain
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
 from langchain.docstore.document import Document
@@ -27,9 +27,11 @@ from app.config.settings import (
     K,
     MAX_CHUNK_USAGE,
     VECTOR_DIM,
+    DEBUG,
     QDRANT_REMOTE_URL,
     RESUME_EVAL_PROMPT_PATH,
     RESUME_PROMPT_PATH,
+    EMBEDDING_MODEL,
     COLLECTION_NAME
 )
 
@@ -40,10 +42,9 @@ if not gemini_api_key:
 
 # ─── Initialize Embeddings and Qdrant Client ─────────────────────────────
 embedding_model = GoogleGenerativeAIEmbeddings(
-    model="models/embedding-001",
+    model=EMBEDDING_MODEL,
     google_api_key=gemini_api_key
-    )
-
+)
 
 qdrant_client = QdrantClient(url=QDRANT_REMOTE_URL, prefer_grpc=False, timeout=30.0)
 
@@ -56,12 +57,12 @@ def ingest_documents(session_id: str, docs: List[Document]):
     )
     chunks = splitter.split_documents(docs)
 
-    # Embed using Gemini directly
     texts = [doc.page_content for doc in chunks]
-    print(f"📥 Ingesting Text \n: {texts}")
+    if DEBUG:
+        print(f"📥 Ingesting Text \n: {texts}")
+
     embeddings = embedding_model.embed_documents(texts)
 
-    # Create payloads
     points = []
     for i, (embedding, doc) in enumerate(zip(embeddings, chunks)):
         payload = {
@@ -80,7 +81,6 @@ def ingest_documents(session_id: str, docs: List[Document]):
             payload=payload
         ))
 
-    # Recreate collection if needed
     collections = qdrant_client.get_collections().collections
     if COLLECTION_NAME not in [col.name for col in collections]:
         qdrant_client.recreate_collection(
@@ -88,13 +88,13 @@ def ingest_documents(session_id: str, docs: List[Document]):
             vectors_config=VectorParams(size=VECTOR_DIM, distance=Distance.COSINE)
         )
 
-    # Upload to Qdrant
     qdrant_client.upsert(
         collection_name=COLLECTION_NAME,
         points=points
     )
-    print(f"✅ Successfully ingested {len(points)} chunks.")
 
+    if DEBUG:
+        print(f"✅ Successfully ingested {len(points)} chunks.")
 
 # ─── Session-Based Retriever ─────────────────────────────────────────────
 def get_session_retriever(session_id: str):
@@ -115,7 +115,7 @@ def get_session_retriever(session_id: str):
             },
             "k": K,
             "fetch_k": 40,
-            "lambda_mult": 0.5 
+            "lambda_mult": 0.5
         }
     )
 
@@ -127,7 +127,8 @@ def build_resume_chain(session_id: str):
     )
 
     def print_and_return(prompt: str) -> str:
-        print("🧾 Final Prompt Sent to LLM:\n", prompt)
+        if DEBUG:
+            print("🧾 Final Prompt Sent to LLM:\n", prompt)
         return prompt
 
     llm = ChatGoogleGenerativeAI(
@@ -139,9 +140,10 @@ def build_resume_chain(session_id: str):
     retriever = get_session_retriever(session_id)
 
     def enrich_with_context(inputs):
-        print("🔍 Retrieving context for input:", inputs["input"])
-        docs = retriever.invoke(inputs["input"])
+        if DEBUG:
+            print("🔍 Retrieving context for input:", inputs["input"])
 
+        docs = retriever.invoke(inputs["input"])
         _, session = get_session(session_id)
         chunk_usage = session.chunk_usage
 
@@ -149,29 +151,33 @@ def build_resume_chain(session_id: str):
         for doc in docs:
             cid = doc.metadata.get("chunk_id")
             if not cid:
-                print("⚠️ Skipping chunk due to missing chunk_id.")
+                if DEBUG:
+                    print("⚠️ Skipping chunk due to missing chunk_id.")
                 continue
             count = chunk_usage.get(cid, 0)
-            print(f"Chunk usage for {cid}: {count}")
+            if DEBUG:
+                print(f"Chunk usage for {cid}: {count}")
             if count < MAX_CHUNK_USAGE:
                 filtered_docs.append(doc)
                 chunk_usage[cid] = count + 1
             else:
-                print(f"⚠️ Skipping chunk due to usage threshold.")
+                if DEBUG:
+                    print(f"⚠️ Skipping chunk due to usage threshold.")
 
         if not filtered_docs:
-            print("⚠️ No relevant chunks found. Using full resume as fallback.")
+            if DEBUG:
+                print("⚠️ No relevant chunks found. Using full resume as fallback.")
             context = session.resume_text
         else:
             context = "\n\n".join(doc.page_content for doc in filtered_docs)
-            print("📥 Retrieved context:\n", context[:500])
+            if DEBUG:
+                print("📥 Retrieved context:\n", context[:500])
 
         return {
             "context": context,
             "input": inputs["input"],
             "chat_history": inputs.get("chat_history", "")
         }
-
 
     return (
         RunnableLambda(enrich_with_context)
@@ -182,10 +188,12 @@ def build_resume_chain(session_id: str):
     )
 
 # ─── Candidate Evaluation Chain ──────────────────────────────────────────
-def get_evaluation_chain() -> RetrievalQA:
+def get_evaluation_chain() -> LLMChain:
+    template = RESUME_EVAL_PROMPT_PATH.read_text()
+
     prompt = PromptTemplate(
         input_variables=["resume", "chat_history"],
-        template=Path(RESUME_EVAL_PROMPT_PATH).read_text()
+        template=template
     )
 
     llm = ChatGoogleGenerativeAI(
@@ -194,22 +202,13 @@ def get_evaluation_chain() -> RetrievalQA:
         google_api_key=gemini_api_key
     )
 
-    return RetrievalQA.from_chain_type(
-        llm=llm,
-        retriever=None,
-        chain_type="stuff",
-        chain_type_kwargs={"prompt": prompt},
-        verbose=True
-    )
+    return prompt | llm
 
 # ─── Cleanup Expired Sessions ────────────────────────────────────────────
 def delete_old_sessions(mins: int = 30):
-    """
-    Deletes expired sessions based on the `created_at` timestamp inside `metadata`.
-    Only deletes sessions whose top-level `session_id` is available.
-    """
     cutoff = datetime.utcnow() - timedelta(minutes=mins)
-    print(f"🕒 Removing sessions older than {cutoff.isoformat()}...")
+    if DEBUG:
+        print(f"🕒 Removing sessions older than {cutoff.isoformat()}...")
 
     expired_sessions = set()
     offset = None
@@ -249,7 +248,8 @@ def delete_old_sessions(mins: int = 30):
 
     for session_id in expired_sessions:
         try:
-            print(f"🗑 Deleting expired session: {session_id}")
+            if DEBUG:
+                print(f"🗑 Deleting expired session: {session_id}")
             qdrant_client.delete(
                 collection_name=COLLECTION_NAME,
                 points_selector=Filter(

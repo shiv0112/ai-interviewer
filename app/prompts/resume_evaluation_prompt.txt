@@ -6,7 +6,7 @@ Resume:
 Interview Conversation:
 {chat_history}
 
-Evaluate the candidate on a scale of 1 to 10.
+Evaluate the candidate on a scale of 1 to 10 and make sure to evaluate on the bases of conversation.
 Provide:
 1. A score out of 10
 2. Key strengths observed

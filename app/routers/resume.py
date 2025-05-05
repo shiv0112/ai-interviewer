@@ -102,15 +102,18 @@ async def evaluate_candidate(session_id: str):
         chat_lines = [f"User: {q}\nAI: {a}" for q, a in session.chat_history]
         chat_history = "\n\n".join(chat_lines)
 
-        eval_chain = get_evaluation_chain()
-        result = await eval_chain.apredict({
+        chain = get_evaluation_chain()
+
+        result = await chain.ainvoke({
             "resume": session.resume_text,
             "chat_history": chat_history
         })
 
+        feedback = result.content if hasattr(result, "content") else str(result)
+
         return {
             "session_id": session_id,
-            "feedback": result if isinstance(result, str) else getattr(result, "content", str(result))
+            "feedback": feedback
         }
 
     except Exception as e:
