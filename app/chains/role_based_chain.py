@@ -9,10 +9,10 @@ google_api_key = os.getenv("GEMINI_API_KEY")
 if not google_api_key:
     raise ValueError("GEMINI_API_KEY is missing from environment variables.")
 
-def get_role_conversation_chain(memory: ConversationBufferMemory, job_desc: str) -> ConversationChain:
+def get_role_conversation_chain(memory: ConversationBufferMemory, role_name: str) -> ConversationChain:
 
     template_str = ROLE_PROMPT_PATH.read_text()  
-    dynamic_prompt = template_str.replace("{job_desc}", job_desc)
+    dynamic_prompt = template_str.replace("{role_name}", role_name)
 
 
     prompt = PromptTemplate(
@@ -38,7 +38,7 @@ def get_evaluation_chain() -> LLMChain:
     template = ROLE_EVAL_PROMPT_PATH.read_text()
 
     prompt = PromptTemplate(
-        input_variables=["job_desc", "chat_history"],
+        input_variables=["role_name", "chat_history"],
         template=template
     )
 
