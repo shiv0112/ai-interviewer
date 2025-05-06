@@ -38,7 +38,7 @@ app.include_router(status.router)
 app.include_router(role_based.router)
 app.include_router(jd.router)
 app.include_router(resume.router)
-# app.include_router(hybrid.router)
+app.include_router(hybrid.router)
 
 
 if __name__ == "__main__":

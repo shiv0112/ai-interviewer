@@ -28,3 +28,7 @@ QDRANT_PATH = Path("qdrant_db")
 RESUME_PROMPT_PATH = Path("app/prompts/resume_prompt.txt")
 RESUME_EVAL_PROMPT_PATH = Path("app/prompts/resume_evaluation_prompt.txt")
 QDRANT_REMOTE_URL = "http://localhost:6333"
+
+# HYBRID CONFIGS
+HYBRID_PROMPT_PATH = Path("app/prompts/hybrid_prompt.txt")
+HYBRID_EVAL_PROMPT_PATH = Path("app/prompts/hybrid_evaluation_prompt.txt")
