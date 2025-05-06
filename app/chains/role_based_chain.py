@@ -3,7 +3,7 @@ from langchain.prompts import PromptTemplate
 from langchain.chains import ConversationChain, LLMChain
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.memory import ConversationBufferMemory
-from app.config.settings import GEMINI_MODEL, GEMINI_TEMP, ROLE_PROMPT_PATH, ROLE_EVAL_PROMPT_PATH
+from app.config.settings import DEBUG, GEMINI_MODEL, GEMINI_TEMP, ROLE_PROMPT_PATH, ROLE_EVAL_PROMPT_PATH
 
 google_api_key = os.getenv("GEMINI_API_KEY")
 if not google_api_key:
@@ -30,7 +30,7 @@ def get_role_conversation_chain(memory: ConversationBufferMemory, role_name: str
         llm=llm,
         prompt=prompt,
         memory=memory,
-        verbose=True
+        verbose=DEBUG
     )
 
 def get_evaluation_chain() -> LLMChain:

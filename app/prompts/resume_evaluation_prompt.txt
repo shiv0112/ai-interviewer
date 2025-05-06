@@ -1,0 +1,14 @@
+You are an AI interviewer. Below is the resume and the full interview chat history with the candidate.
+
+Resume:
+{resume}
+
+Interview Conversation:
+{chat_history}
+
+Evaluate the candidate on a scale of 1 to 10 and make sure to evaluate on the bases of conversation.
+Provide:
+1. A score out of 10
+2. Key strengths observed
+3. Key weaknesses observed
+4. Final recommendation (Hire / Not Hire + Why)
