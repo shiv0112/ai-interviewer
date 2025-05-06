@@ -18,13 +18,13 @@ USER INPUT
 │     ➝ LLM  
 │     ➝ tailored question  
 │
-├── Option 3: Resume Only   
+├── Option 3: Resume Only  ✅
 │     ➝ upload resume text  
 │     ➝ resume_based_chain  
 │     ➝ LLM  
 │     ➝ tailored question  
 │
-└── Option 4: Resume + JD  
+└── Option 4: Resume + JD  ✅
       ➝ upload JD text  
       ➝ upload resume & JD text  
       ➝ hybrid_chain (RAG + prompt)   
@@ -44,50 +44,56 @@ ai_interviewer/
 ├── app/                       # 🧠 Core application logic
 │   │
 │   ├── chains/                # 💬 LangChain chain definitions
-│   │   ├── role_based_chain.py       # Defines ConversationChain for role-based chat
-│   │   ├── jd_based_chain.py         # Defines ConversationChain for jd-based chat
-│   │   └── resume_based_chain.py     # Defines ConversationChain for resume based chat that does rag
+│   │   ├── hybrid_chain.py       # Defines ConversationChain for hybrid mode (resume + JD combo)
+│   │   ├── role_based_chain.py   # Defines ConversationChain for role-based chat
+│   │   ├── jd_based_chain.py     # Defines ConversationChain for jd-based chat
+│   │   └── resume_based_chain.py # Defines ConversationChain for resume-based chat with RAG
 │   │
 │   ├── config/                # ⚙️ App-wide configuration
-│   │   └── settings.py               # Used to load env vars and configurable variables
+│   │   └── settings.py        # Loads env vars and configurable variables
 │   │
 │   ├── memory/                # 🧠 Session memory management
-│   │   ├── role_sessions.py      # `ChatSession` class, `get_session()` logic
-│   │   └── jd_sessions.py        # `ChatSession` class, `get_session()` logic
-│   │   └── resume_sessions.py    # `ChatSession` class, `get_session()` logic
+│   │   ├── hybrid_sessions.py    # `HybridSession` class, `get_session()` logic for hybrid mode
+│   │   ├── role_sessions.py      # `ChatSession` class, `get_session()` logic for role-based mode
+│   │   ├── jd_sessions.py        # `ChatSession` class, `get_session()` logic for JD-based mode
+│   │   └── resume_sessions.py    # `ChatSession` class, `get_session()` logic for resume-based mode
 │   │
 │   ├── prompts/               # 📝 LLM prompt templates
-│   │   ├── jd_evaluation_prompt.txt     # Prompt to generate the evaluation of jd based conversation
-│   │   ├── jd_prompt.txt                # Prompt to generate the jd based conversation
-│   │   ├── resume_evaluation_prompt     # Prompt to generate the evaluation of resume based conversation
-│   │   ├── resume_prompt.txt           # Prompt to generate the resume based conversation
-│   │   ├── role_evaluation_prompt.txt   # Prompt to generate the evaluation of role based conversation
-│   │   └── role_prompt.txt              # Prompt to generate the role based conversation
+│   │   ├── hybrid_eval_prompt.txt      # Prompt for evaluating hybrid conversation
+│   │   ├── hybrid_prompt.txt           # Prompt for hybrid conversation (resume + JD)
+│   │   ├── jd_eval_prompt.txt         # Prompt for evaluating JD-based conversation
+│   │   ├── jd_prompt.txt              # Prompt for JD-based conversation
+│   │   ├── resume_eval_prompt.txt     # Prompt for evaluating resume-based conversation
+│   │   ├── resume_prompt.txt          # Prompt for resume-based conversation
+│   │   ├── role_eval_prompt.txt      # Prompt for evaluating role-based conversation
+│   │   └── role_prompt.txt           # Prompt for role-based conversation
 │   │
 │   ├── routers/               # 🌐 FastAPI route handlers
-│   │   ├── role_based.py              # /chat/role logic (handles role-based conversation)
-│   │   ├── resume.py                  # /chat/resume (future expansion)
-│   │   ├── jd.py                      # /chat/jd (based on JD input)
-│   │   ├── hybrid.py                  # /chat/hybrid (resume + JD combo)
-│   │   └── status.py                  # /health or /status (heartbeat or version check)
+│   │   ├── role_based.py            # /chat/role logic (handles role-based conversation)
+│   │   ├── resume.py                # /chat/resume (future expansion)
+│   │   ├── jd.py                    # /chat/jd (handles JD input)
+│   │   ├── hybrid.py                # /chat/hybrid (handles resume + JD combo)
+│   │   └── status.py                # /health or /status (heartbeat or version check)
 │   │
 │   ├── schemas/              # 🧾 Pydantic models for validation
-│   │   ├── role_based_schemas.py     # `ChatRequest`, `ChatResponse` for role mode
-│   │   ├── resume_based_schemas.py   # `ChatRequest`, `ChatResponse` for resume mode
-│   │   └── jd_based_schemas.py       # `ChatRequest`, `ChatResponse` for jd mode
+│   │   ├── hybrid_schemas.py     # `ChatRequest`, `ChatResponse` for hybrid mode
+│   │   ├── role_based_schemas.py # `ChatRequest`, `ChatResponse` for role-based mode
+│   │   ├── resume_based_schemas.py # `ChatRequest`, `ChatResponse` for resume-based mode
+│   │   └── jd_based_schemas.py   # `ChatRequest`, `ChatResponse` for JD-based mode
 │   │
 │   ├── utils/                 # 🔧 Reusable utility modules
-│   │   ├── logger.py                  # Centralized logger config
-│   │   └── pdf_loader.py              # for reading pdf files
+│   │   ├── logger.py              # Centralized logger config
+│   │   └── pdf_loader.py          # PDF loading utility
 │
 │
 ├── data/                     # 📂 Runtime storage
-│   ├── uploads/                      # Uploaded resumes or user files
-│   ├── logs/                         # Log output files (if written to disk)
-│   └── vectorstore/                 # FAISS / pgvector / Chroma storage
+│   ├── uploads/                 # Uploaded resumes or user files
+│   ├── logs/                    # Log output files (if written to disk)
+│   └── vectorstore/             # FAISS / pgvector / Chroma storage
 │
-├── qdrant_db/                     # 📂 Vector db collection
+├── qdrant_db/                 # 📂 Vector db collection (for storing embeddings in Qdrant)
 │
 ├── frontend/
-│   └── streamlit_app.py      # 🎨 User interface for the AI Interviewer
+│   └── streamlit_app.py        # 🎨 User interface for the AI Interviewer
+
 ```
